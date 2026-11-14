@@ -6,7 +6,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .db import Base, engine
-from .models import Reading  # noqa: F401  (register for CREATE TABLE / migrations)
+from .models import (  # noqa: F401  (register all tables for CREATE TABLE / migrations)
+    Asset,
+    Position,
+    Reading,
+    ReadingCard,
+    Session,
+    TarotCard,
+    User,
+)
+from .routers import api_router
 
 
 async def init_db() -> None:
