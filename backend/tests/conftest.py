@@ -5,14 +5,30 @@ os.environ["APP_DATABASE_URL"] = "sqlite+aiosqlite:///./test.db"
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from app.db import Base, engine
+from app.db import Base, SessionLocal, engine
 from app.main import create_app
+from app.models import TarotCard
+
+def make_test_cards() -> list[TarotCard]:
+    return [
+        TarotCard(
+            name=name, arcana="major", suit=None, rank=None,
+            upright=f"{name} upright meaning", reversed_=f"{name} reversed meaning",
+            love=f"{name} love meaning", career=f"{name} career meaning",
+            yes_no="yes", element="Fire", zodiac="Aries", guide_url=None, image_path=None,
+        )
+        for name in ("The Fool", "The Magician", "The High Priestess", "The Empress")
+    ]
 
 
 @pytest.fixture
 async def client():
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+    async with SessionLocal() as session:
+        session.add_all(make_test_cards())
+        await session.commit()
     app = create_app()
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac

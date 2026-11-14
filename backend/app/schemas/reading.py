@@ -1,19 +1,22 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-
-class Card(BaseModel):
-    name: str
-    position: str  # e.g. "past", "present", "future"
-    reversed_: bool = Field(alias="reversed", serialization_alias="reversed")
-
-    model_config = {"populate_by_name": True}
+SpreadPosition = Literal["past", "present", "future"]
 
 
 class ReadingCreate(BaseModel):
     question: str = Field(min_length=1, max_length=500)
+
+
+class DrawnCard(BaseModel):
+    card_id: int
+    name: str
+    position: SpreadPosition
+    reversed: bool
+    meaning: str
 
 
 class ReadingResponse(BaseModel):
@@ -21,6 +24,6 @@ class ReadingResponse(BaseModel):
 
     id: UUID
     question: str
-    cards: list[Card]
     interpretation: str
     created_at: datetime
+    cards: list[DrawnCard]

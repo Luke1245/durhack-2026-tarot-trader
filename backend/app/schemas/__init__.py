@@ -1,3 +1,3 @@
-from .reading import Card, ReadingCreate, ReadingResponse
+from .reading import DrawnCard, ReadingCreate, ReadingResponse
 
-__all__ = ["Card", "ReadingCreate", "ReadingResponse"]
+__all__ = ["DrawnCard", "ReadingCreate", "ReadingResponse"]
