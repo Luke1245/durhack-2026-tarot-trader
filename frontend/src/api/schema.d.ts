@@ -248,6 +248,8 @@ export interface components {
             reversed: boolean;
             /** Meaning */
             meaning: string;
+            /** Narrative */
+            narrative?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -358,6 +360,9 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Side */
+            side: ("long" | "short") | null;
+            asset: components["schemas"]["AssetResponse"] | null;
             /** Cards */
             cards: components["schemas"]["DrawnCard"][];
         };

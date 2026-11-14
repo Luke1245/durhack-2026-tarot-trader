@@ -47,6 +47,7 @@ async def create_position(
 ) -> PositionResponse:
     position = await positions_service.open_position(session, user.id, payload)
     position = await positions_service.get_position(session, user.id, position.id)
+    await portfolio_service.snapshot_now(session, user.id)
     return to_response(position, await prices.current_price(position.asset.symbol))
 
 
@@ -77,6 +78,7 @@ async def close_position(
     user: User = Depends(get_current_user),
 ) -> PositionResponse:
     position = await positions_service.close_position(session, user.id, position_id)
+    await portfolio_service.snapshot_now(session, user.id)
     return to_response(position)
 
 
@@ -86,7 +88,7 @@ async def get_portfolio(
     user: User = Depends(get_current_user),
 ) -> PortfolioResponse:
     value = await portfolio_service.compute_value(session, user.id)
-    await portfolio_service.maybe_snapshot(session, user.id, value=value)
+    await portfolio_service.maybe_snapshot(session, user.id)
     history = await portfolio_service.history(session, user.id)
     return PortfolioResponse(
         value=value,

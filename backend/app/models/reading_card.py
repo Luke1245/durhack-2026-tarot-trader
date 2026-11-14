@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import Boolean, ForeignKey, String
+from sqlalchemy import Boolean, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..db import Base
@@ -19,6 +19,7 @@ class ReadingCard(Base):
     card_id: Mapped[int] = mapped_column(ForeignKey("tarot_cards.id"), primary_key=True, index=True)
     position: Mapped[str] = mapped_column(String(10))  # past | present | future
     reversed: Mapped[bool] = mapped_column(Boolean, default=False)
+    narrative: Mapped[str | None] = mapped_column(Text)  # hover text: card -> price action
 
     reading: Mapped["Reading"] = relationship(back_populates="drawn_cards")
     card: Mapped["TarotCard"] = relationship()

@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api } from './client'
+import type { components } from './schema'
+
+type PositionCreate = components['schemas']['PositionCreate']
 
 export function usePositions() {
   return useQuery({
@@ -23,6 +26,21 @@ export function usePortfolio() {
       return data
     },
     refetchInterval: 30_000,
+  })
+}
+
+export function useCreatePosition() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (body: PositionCreate) => {
+      const { data, error } = await api.POST('/api/positions', { body })
+      if (error) throw new Error('Failed to open position')
+      return data
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['positions'] })
+      void queryClient.invalidateQueries({ queryKey: ['portfolio'] })
+    },
   })
 }
 

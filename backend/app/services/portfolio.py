@@ -40,7 +40,7 @@ async def compute_value(session: AsyncSession, user_id: UUID) -> Decimal:
     return value
 
 
-async def maybe_snapshot(session: AsyncSession, user_id: UUID, value: Decimal | None = None) -> None:
+async def maybe_snapshot(session: AsyncSession, user_id: UUID) -> None:
     """Lazy snapshot write: record value if the latest snapshot is stale."""
     latest = await session.scalar(
         select(PortfolioSnapshot)
@@ -55,9 +55,14 @@ async def maybe_snapshot(session: AsyncSession, user_id: UUID, value: Decimal | 
             taken_at = taken_at.replace(tzinfo=timezone.utc)
         if now - taken_at < SNAPSHOT_STALE_AFTER:
             return
-    if value is None:
-        value = await compute_value(session, user_id)
-    session.add(PortfolioSnapshot(user_id=user_id, value=value, taken_at=now))
+    await snapshot_now(session, user_id)
+
+
+async def snapshot_now(session: AsyncSession, user_id: UUID) -> None:
+    """Unconditional snapshot — used right after a position opens or closes so
+    the portfolio value/graph reflect the trade immediately."""
+    value = await compute_value(session, user_id)
+    session.add(PortfolioSnapshot(user_id=user_id, value=value, taken_at=datetime.now(timezone.utc)))
     await session.commit()
 
 

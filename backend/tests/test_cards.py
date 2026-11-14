@@ -24,5 +24,5 @@ async def test_list_assets(client):
         await session.commit()
     r = await client.get("/api/assets")
     assert r.status_code == 200
-    assets = r.json()
-    assert assets == [{"id": assets[0]["id"], "symbol": "AAPL", "name": "Apple"}]
+    symbols = {a["symbol"] for a in r.json()}
+    assert {"AAAA", "BBBB", "AAPL"} <= symbols

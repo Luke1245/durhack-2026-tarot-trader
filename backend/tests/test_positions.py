@@ -134,6 +134,26 @@ async def test_portfolio_value_continuous_across_close(client, fake_prices):
     assert after == before + 10
 
 
+async def test_open_and_close_write_snapshots(client, fake_prices):
+    # each trade immediately adds a graph point so the portfolio reflects it
+    await client.post("/api/auth/register", json=USER)
+    await _setup_assets(client)
+    hist0 = (await client.get("/api/portfolio")).json()["history"]
+
+    opened = (
+        await client.post(
+            "/api/positions",
+            json={"asset_id": await _asset_id("AAPL"), "side": "long", "quantity": "1"},
+        )
+    ).json()
+    hist1 = (await client.get("/api/portfolio")).json()["history"]
+    assert len(hist1) == len(hist0) + 1  # snapshot written on open
+
+    await client.post(f"/api/positions/{opened['id']}/close")
+    hist2 = (await client.get("/api/portfolio")).json()["history"]
+    assert len(hist2) == len(hist1) + 1  # and on close
+
+
 async def test_positions_require_auth(client):
     assert (await client.get("/api/positions")).status_code == 401
     assert (await client.get("/api/portfolio")).status_code == 401

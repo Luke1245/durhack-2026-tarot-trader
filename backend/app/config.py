@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://localhost:5432/tarot"
     cors_origins: list[str] = ["http://localhost:5173"]
     finnhub_api_key: str = ""
+    gemini_api_key: str = ""
 
     @field_validator("database_url", mode="before")
     @classmethod
