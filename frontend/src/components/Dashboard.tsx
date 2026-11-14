@@ -23,31 +23,52 @@ export function Dashboard() {
   const createReading = useCreateReading()
 
   const [phase, setPhase] = useState<Phase>('idle')
+  const [awaitingReveal, setAwaitingReveal] = useState(false)
   const [flashing, setFlashing] = useState<(string | null)[]>([null, null, null])
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
-    return () => clearInterval(timer.current ?? undefined)
-  }, [])
+    return () => {
+      clearInterval(timer.current ?? undefined)
+      // abandoned fire-and-forget draws still exist server-side (accepted:
+      // readings are cheap rows), but drop the client cache entry
+      createReading.reset()
+    }
+  }, [createReading])
+
+  // The draw is decided the moment shuffling starts; STOP only reveals it.
+  useEffect(() => {
+    if (!awaitingReveal) return
+    if (createReading.isSuccess) {
+      setAwaitingReveal(false)
+      setPhase('revealed')
+    } else if (createReading.isError) {
+      setAwaitingReveal(false)
+      setPhase('idle')
+    }
+  }, [awaitingReveal, createReading.isSuccess, createReading.isError])
 
   function startShuffle() {
     if (!cards.data?.length) return
     setPhase('shuffling')
+    setAwaitingReveal(false)
     createReading.reset()
+    createReading.mutate({}) // fire and forget: server draws + consults Gemini now
     timer.current = setInterval(() => {
       setFlashing([shufflePick(cards.data!), shufflePick(cards.data!), shufflePick(cards.data!)].map((c) => c.image_path))
     }, SHUFFLE_INTERVAL_MS)
   }
 
-  async function stopShuffle() {
+  function stopShuffle() {
     clearInterval(timer.current ?? undefined)
     timer.current = null
     setFlashing([null, null, null])
-    try {
-      await createReading.mutateAsync({})
+    if (createReading.isSuccess) {
       setPhase('revealed')
-    } catch {
+    } else if (createReading.isError) {
       setPhase('idle')
+    } else {
+      setAwaitingReveal(true) // still in flight: reveal via effect when it lands
     }
   }
 
@@ -78,8 +99,16 @@ export function Dashboard() {
 
       {phase !== 'revealed' ? (
         <div className="flex flex-col items-center gap-2">
-          <Button size="lg" onClick={phase === 'shuffling' ? stopShuffle : startShuffle} disabled={createReading.isPending}>
-            {createReading.isPending ? 'Drawing…' : phase === 'shuffling' ? 'STOP' : 'Shuffle'}
+          <Button
+            size="lg"
+            onClick={phase === 'shuffling' ? stopShuffle : startShuffle}
+            disabled={awaitingReveal}
+          >
+            {phase === 'shuffling'
+              ? 'STOP'
+              : createReading.isPending
+                ? 'Drawing…'
+                : 'Shuffle'}
           </Button>
           {createReading.isPending && (
             <p className="animate-pulse text-sm text-muted-foreground">
