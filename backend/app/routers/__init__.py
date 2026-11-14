@@ -1,12 +1,16 @@
 from fastapi import APIRouter
 
+from .assets import router as assets_router
 from .auth import router as auth_router
 from .cards import router as cards_router
 from .health import router as health_router
+from .positions import router as positions_router
 from .readings import router as readings_router
 
 api_router = APIRouter()
+api_router.include_router(assets_router)
 api_router.include_router(auth_router)
 api_router.include_router(cards_router)
 api_router.include_router(health_router)
+api_router.include_router(positions_router)
 api_router.include_router(readings_router)

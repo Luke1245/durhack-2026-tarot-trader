@@ -19,6 +19,23 @@ spec at `/openapi.json` drives the frontend's `npm run gen:api` codegen.
 uv run python scripts/import_cards.py <dataset.json>
 ```
 
+- `scripts/import_card_images.py` — convert card scans to WebP + backfill `image_path`:
+
+```bash
+uv run python scripts/import_card_images.py <scan_dir>
+```
+
+- `scripts/seed_assets.py` — idempotent upsert of the 15 tradeable stocks:
+
+```bash
+uv run python scripts/seed_assets.py
+```
+
+Prices come from Finnhub (free tier, 60 req/min); the 60-second cache in
+`app/services/prices.py` keeps us under that. Set `APP_FINNHUB_API_KEY` in `.env`.
+Portfolio value history is snapshot-based (ADR-0001 amendment): lazy-write on
+read if stale >5 min, plus an in-process 5-minute loop in `app/main.py`.
+
 ## Run
 
 ```bash
