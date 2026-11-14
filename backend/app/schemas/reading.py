@@ -11,6 +11,7 @@ SpreadPosition = Literal["past", "present", "future"]
 
 class ReadingCreate(BaseModel):
     question: str = Field(default="What do the cards advise?", min_length=1, max_length=500)
+    market: Literal["all", "stocks", "crypto"] = "all"
 
 
 class DrawnCard(BaseModel):

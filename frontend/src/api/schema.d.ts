@@ -343,6 +343,12 @@ export interface components {
              * @default What do the cards advise?
              */
             question?: string;
+            /**
+             * Market
+             * @default all
+             * @enum {string}
+             */
+            market?: "all" | "stocks" | "crypto";
         };
         /** ReadingResponse */
         ReadingResponse: {

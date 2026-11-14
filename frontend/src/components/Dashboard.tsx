@@ -13,6 +13,14 @@ const POSITIONS = ['past', 'present', 'future'] as const
 const SHUFFLE_INTERVAL_MS = 120
 
 type Phase = 'idle' | 'shuffling' | 'revealed'
+type ReadingCreate = components['schemas']['ReadingCreate']
+type Market = NonNullable<ReadingCreate['market']>
+
+const MARKETS: { value: Market; label: string }[] = [
+  { value: 'all', label: 'All markets' },
+  { value: 'stocks', label: 'Stocks' },
+  { value: 'crypto', label: 'Crypto 24/7' },
+]
 
 function shufflePick<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)]
@@ -23,6 +31,7 @@ export function Dashboard() {
   const createReading = useCreateReading()
 
   const [phase, setPhase] = useState<Phase>('idle')
+  const [market, setMarket] = useState<Market>('all')
   const [awaitingReveal, setAwaitingReveal] = useState(false)
   const [flashing, setFlashing] = useState<(string | null)[]>([null, null, null])
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -52,7 +61,7 @@ export function Dashboard() {
     setPhase('shuffling')
     setAwaitingReveal(false)
     createReading.reset()
-    createReading.mutate({}) // fire and forget: server draws + consults Gemini now
+    createReading.mutate({ market }) // fire and forget: server draws + consults Gemini now
     timer.current = setInterval(() => {
       setFlashing([shufflePick(cards.data!), shufflePick(cards.data!), shufflePick(cards.data!)].map((c) => c.image_path))
     }, SHUFFLE_INTERVAL_MS)
@@ -74,6 +83,24 @@ export function Dashboard() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 py-10">
       <h1 className="text-2xl font-semibold">Draw your cards</h1>
+
+      <div className="flex gap-1 rounded-lg border p-1" role="group" aria-label="Market">
+        {MARKETS.map((m) => (
+          <button
+            key={m.value}
+            type="button"
+            onClick={() => setMarket(m.value)}
+            disabled={phase === 'shuffling'}
+            className={
+              market === m.value
+                ? 'rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground'
+                : 'rounded-md px-3 py-1 text-xs text-muted-foreground hover:text-foreground'
+            }
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
 
       <div className="flex gap-6">
         {POSITIONS.map((position, i) => (

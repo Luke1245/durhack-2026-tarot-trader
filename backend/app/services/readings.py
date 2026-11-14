@@ -25,6 +25,8 @@ async def create_reading(session: AsyncSession, user: User, payload: ReadingCrea
         )
 
     assets = list((await session.scalars(select(Asset))).all())
+    if payload.market != "all":
+        assets = [a for a in assets if a.market == payload.market]
     advice = await advice_service.get_advice(drawn_oriented, assets)
     for rc in reading_cards:
         rc.narrative = advice.narratives[rc.position]

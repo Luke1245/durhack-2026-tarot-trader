@@ -48,7 +48,7 @@ async def create_position(
     position = await positions_service.open_position(session, user.id, payload)
     position = await positions_service.get_position(session, user.id, position.id)
     await portfolio_service.snapshot_now(session, user.id)
-    return to_response(position, await prices.current_price(position.asset.symbol))
+    return to_response(position, await prices.current_price(position.asset.quote_symbol))
 
 
 @router.get("/positions", response_model=list[PositionResponse])
@@ -66,9 +66,9 @@ async def list_positions(
             )
         ).all()
     )
-    symbols = [p.asset.symbol for p in positions if p.status == "open"]
+    symbols = [p.asset.quote_symbol for p in positions if p.status == "open"]
     quotes = await prices.prices_for(symbols) if symbols else {}
-    return [to_response(p, quotes.get(p.asset.symbol)) for p in positions]
+    return [to_response(p, quotes.get(p.asset.quote_symbol)) for p in positions]
 
 
 @router.post("/positions/{position_id}/close", response_model=PositionResponse)
