@@ -72,6 +72,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Cards */
+        get: operations["list_cards_api_cards_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -127,12 +144,23 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** CardResponse */
+        CardResponse: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Image Path */
+            image_path: string | null;
+        };
         /** DrawnCard */
         DrawnCard: {
             /** Card Id */
             card_id: number;
             /** Name */
             name: string;
+            /** Image Path */
+            image_path: string | null;
             /**
              * Position
              * @enum {string}
@@ -160,8 +188,11 @@ export interface components {
         };
         /** ReadingCreate */
         ReadingCreate: {
-            /** Question */
-            question: string;
+            /**
+             * Question
+             * @default What do the cards advise?
+             */
+            question?: string;
         };
         /** ReadingResponse */
         ReadingResponse: {
@@ -328,6 +359,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserResponse"];
+                };
+            };
+        };
+    };
+    list_cards_api_cards_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CardResponse"][];
                 };
             };
         };
