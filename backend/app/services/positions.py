@@ -24,7 +24,7 @@ async def open_position(
         if reading is None or reading.user_id != user_id:
             raise HTTPException(status_code=404, detail="Reading not found")
 
-    price = await prices.current_price(asset.symbol)
+    price = await prices.current_price(asset.quote_symbol)
     position = Position(
         user_id=user_id,
         asset_id=asset.id,
@@ -55,7 +55,7 @@ async def close_position(session: AsyncSession, user_id: UUID, position_id: UUID
     position = await get_position(session, user_id, position_id)
     if position.status == "closed":
         raise HTTPException(status_code=409, detail="Position already closed")
-    position.exit_price = await prices.current_price(position.asset.symbol)
+    position.exit_price = await prices.current_price(position.asset.quote_symbol)
     position.status = "closed"
     position.closed_at = position.closed_at or datetime.now(timezone.utc)
     await session.commit()

@@ -26,13 +26,13 @@ async def compute_value(session: AsyncSession, user_id: UUID) -> Decimal:
             )
         ).all()
     )
-    quotes = await prices.prices_for([p.asset.symbol for p in positions]) if positions else {}
+    quotes = await prices.prices_for([p.asset.quote_symbol for p in positions]) if positions else {}
 
     value = Decimal(0)
     for p in positions:
         if p.status == "open":
             # unavailable quote -> value at entry until the feed recovers
-            value += marked_value(p, quotes.get(p.asset.symbol) or p.entry_price)
+            value += marked_value(p, quotes.get(p.asset.quote_symbol) or p.entry_price)
         else:
             # continuous basis: cost basis + realized PnL (= liquidation proceeds),
             # so closing a position doesn't cliff-drop the portfolio value
