@@ -10,7 +10,9 @@ requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.20.1",
     "asyncpg>=0.32.0",
+    "email-validator>=2.3.0",
     "fastapi>=0.163.0",
+    "pwdlib[argon2]>=0.4.0",
     "pydantic-settings>=2.16.3",
     "sqlalchemy[asyncio]>=2.1.8",
     "uvicorn[standard]>=0.54.0",
