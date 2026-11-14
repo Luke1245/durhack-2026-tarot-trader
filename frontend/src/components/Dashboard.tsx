@@ -28,13 +28,12 @@ export function Dashboard() {
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
-    return () => {
-      clearInterval(timer.current ?? undefined)
-      // abandoned fire-and-forget draws still exist server-side (accepted:
-      // readings are cheap rows), but drop the client cache entry
-      createReading.reset()
-    }
-  }, [createReading])
+    return () => clearInterval(timer.current ?? undefined)
+    // note: a fire-and-forget draw that never reveals leaves its reading
+    // row server-side (accepted: readings are cheap) — deliberately no
+    // mutation reset here; resetting inside effect cleanup re-renders
+    // forever because the mutation object's identity changes every render
+  }, [])
 
   // The draw is decided the moment shuffling starts; STOP only reveals it.
   useEffect(() => {
