@@ -24,6 +24,7 @@ def _to_response(reading: Reading) -> ReadingResponse:
             DrawnCard(
                 card_id=rc.card.id,
                 name=rc.card.name,
+                image_path=rc.card.image_path,
                 position=rc.position,
                 reversed=rc.reversed,
                 meaning=rc.card.reversed_ if rc.reversed else rc.card.upright,

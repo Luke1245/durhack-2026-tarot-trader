@@ -19,10 +19,10 @@ async def test_readings_require_auth(client):
 async def test_create_and_get_reading(client):
     await client.post("/api/auth/register", json=USER)
 
-    r = await client.post("/api/readings", json={"question": "Will we ship on time?"})
+    r = await client.post("/api/readings", json={})
     assert r.status_code == 201
     body = r.json()
-    assert body["question"] == "Will we ship on time?"
+    assert body["question"] == "What do the cards advise?"
     assert len(body["cards"]) == 3
     assert {c["position"] for c in body["cards"]} == {"past", "present", "future"}
 

@@ -8,12 +8,13 @@ SpreadPosition = Literal["past", "present", "future"]
 
 
 class ReadingCreate(BaseModel):
-    question: str = Field(min_length=1, max_length=500)
+    question: str = Field(default="What do the cards advise?", min_length=1, max_length=500)
 
 
 class DrawnCard(BaseModel):
     card_id: int
     name: str
+    image_path: str | None
     position: SpreadPosition
     reversed: bool
     meaning: str
