@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from .asset import AssetResponse
+
 SpreadPosition = Literal["past", "present", "future"]
 
 
@@ -18,6 +20,7 @@ class DrawnCard(BaseModel):
     position: SpreadPosition
     reversed: bool
     meaning: str
+    narrative: str | None = None
 
 
 class ReadingResponse(BaseModel):
@@ -27,4 +30,6 @@ class ReadingResponse(BaseModel):
     question: str
     interpretation: str
     created_at: datetime
+    side: Literal["long", "short"] | None
+    asset: AssetResponse | None
     cards: list[DrawnCard]

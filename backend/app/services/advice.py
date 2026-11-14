@@ -1,0 +1,150 @@
+"""The Advice: turn a drawn spread into side (long/short) + asset + narratives.
+
+Primary: Google Gemini (structured JSON output). Fallback (spec Q8): dataset
+yes/no majority vote with reversed-flip, random asset, template narratives —
+the draw must never hard-fail on a model or quota error.
+"""
+
+import asyncio
+import logging
+import random
+from dataclasses import dataclass
+from typing import Literal
+
+from pydantic import BaseModel, Field
+
+from ..config import get_settings
+from ..models import SPREAD_POSITIONS, Asset, TarotCard
+
+logger = logging.getLogger("tarot-trader.advice")
+
+ADVICE_TIMEOUT_SECONDS = 30
+
+ADVICE_PROMPT = """You are a tarot-trading oracle. A user drew three tarot cards
+(past, present, future). Based on the cards' meanings and orientations:
+
+1. Decide a sentiment: does the spread predict the chosen asset's price will
+   RISE (long) or FALL (short)?
+2. Choose ONE asset from the provided tradeable list that best fits the spread.
+3. Write a one-paragraph reasoning connecting the three cards to that asset.
+4. For each card, write a short narrative relating it to the asset's price:
+   past = the asset's recent history, present = its current situation,
+   future = where it is heading.
+
+Be decisive: always pick exactly one side and one asset.
+
+Drawn cards:
+{cards}
+
+Tradeable assets:
+{assets}"""
+
+
+@dataclass
+class Advice:
+    side: Literal["long", "short"]
+    asset: Asset | None  # None only when no assets are seeded at all
+    reasoning: str
+    narratives: dict[str, str]  # spread position -> hover narrative
+
+
+class _CardAdvice(BaseModel):
+    position: Literal["past", "present", "future"]
+    narrative: str
+
+
+class _GeminiAdvice(BaseModel):
+    """Schema sent to Gemini as structured output."""
+
+    side: Literal["long", "short"]
+    asset_symbol: str = Field(description="Symbol from the provided tradeable list")
+    reasoning: str
+    cards: list[_CardAdvice] = Field(min_length=3, max_length=3)
+
+
+async def get_advice(
+    drawn: list[tuple[TarotCard, str, bool]], assets: list[Asset]
+) -> Advice:
+    """Never raises: any Gemini failure (quota, timeout, malformed output,
+    unknown asset) degrades to the deterministic fallback."""
+    try:
+        return await asyncio.wait_for(_gemini_advice(drawn, assets), timeout=ADVICE_TIMEOUT_SECONDS)
+    except Exception:
+        logger.exception("Gemini advice failed; using deterministic fallback")
+        return _fallback_advice(drawn, assets)
+
+
+async def _gemini_advice(drawn: list[tuple[TarotCard, str, bool]], assets: list[Asset]) -> Advice:
+    from google import genai
+    from google.genai import types
+
+    key = get_settings().gemini_api_key
+    if not key:
+        raise RuntimeError("GEMINI_API_KEY not configured")
+    if not assets:
+        raise RuntimeError("no assets seeded")
+
+    cards_text = "\n".join(
+        f"- {card.name} ({position}{', reversed' if rev else ''}): "
+        f"{card.reversed_ if rev else card.upright}"
+        for card, position, rev in drawn
+    )
+    assets_text = "\n".join(f"- {a.symbol}: {a.name}" for a in assets)
+
+    client = genai.Client(api_key=key)
+    response = await client.aio.models.generate_content(
+        model="gemini-3.8-flash",
+        contents=ADVICE_PROMPT.format(cards=cards_text, assets=assets_text),
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=_GeminiAdvice,
+            max_output_tokens=1024,
+        ),
+    )
+    raw = _GeminiAdvice.model_validate_json(response.text)
+
+    # map narratives by position (never positionally — Gemini may reorder)
+    narratives = {c.position: c.narrative for c in raw.cards}
+    if set(narratives) != set(SPREAD_POSITIONS):
+        raise RuntimeError(f"Gemini returned positions {sorted(narratives)}")
+
+    symbol = raw.asset_symbol.strip().upper()
+    asset = next((a for a in assets if a.symbol == symbol), None)
+    if asset is None:
+        raise RuntimeError(f"Gemini chose unknown asset {symbol!r}")
+    return Advice(side=raw.side, asset=asset, reasoning=raw.reasoning, narratives=narratives)
+
+
+def _fallback_advice(drawn: list[tuple[TarotCard, str, bool]], assets: list[Asset]) -> Advice:
+    score = 0
+    for card, _position, rev in drawn:
+        verdict = (card.yes_no or "").lower()
+        if rev:
+            verdict = {"yes": "no", "no": "yes"}.get(verdict, verdict)
+        if verdict == "yes":
+            score += 1
+        elif verdict == "no":
+            score -= 1
+    side = "long" if score > 0 else "short" if score < 0 else random.choice(["long", "short"])
+    asset = random.choice(assets) if assets else None
+    symbol = asset.symbol if asset else "the market"
+
+    phrases = {
+        "past": f"what {symbol} has been through",
+        "present": f"the situation {symbol} is in right now",
+        "future": f"where {symbol} is heading",
+    }
+    narratives = {
+        position: (
+            f"{card.name} ({position}{', reversed' if rev else ''}): "
+            f"{card.reversed_ if rev else card.upright}. "
+            f"In this spread for {symbol}, this reflects {phrases[position]}."
+        )
+        for card, position, rev in drawn
+    }
+    direction = "upward" if side == "long" else "downward"
+    reasoning = (
+        f"Taken together, the spread tilts {direction} for {symbol}. "
+        f"The cards counsel {side}."
+    )
+    return Advice(side=side, asset=asset, reasoning=reasoning, narratives=narratives)
