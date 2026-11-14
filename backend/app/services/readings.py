@@ -7,22 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import SPREAD_POSITIONS, Reading, ReadingCard, TarotCard, User
 from ..schemas import ReadingCreate
 
-# Temporary until auth (step 3): readings attach to an auto-provisioned demo user.
-DEMO_EMAIL = "demo@tarot-trader.local"
 
-
-async def _get_or_create_demo_user(session: AsyncSession) -> User:
-    user = await session.scalar(select(User).where(User.email == DEMO_EMAIL))
-    if user is None:
-        user = User(email=DEMO_EMAIL, name="Demo User", password_hash="!")
-        session.add(user)
-        await session.flush()
-    return user
-
-
-async def create_reading(session: AsyncSession, payload: ReadingCreate) -> Reading:
-    user = await _get_or_create_demo_user(session)
-
+async def create_reading(session: AsyncSession, user: User, payload: ReadingCreate) -> Reading:
     cards = (await session.scalars(select(TarotCard))).all()
     if len(cards) < len(SPREAD_POSITIONS):
         raise RuntimeError("tarot_cards is not seeded; run scripts/import_cards.py")

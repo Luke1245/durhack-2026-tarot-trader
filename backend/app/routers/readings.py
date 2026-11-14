@@ -6,9 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..db import get_session
-from ..models import Reading, ReadingCard
+from ..models import Reading, ReadingCard, User
 from ..schemas import DrawnCard, ReadingCreate, ReadingResponse
 from ..services import readings as readings_service
+from ..services.auth import get_current_user
 
 router = APIRouter(tags=["readings"])
 
@@ -44,8 +45,9 @@ async def _load(session: AsyncSession, reading_id: UUID) -> Reading | None:
 async def create_reading(
     payload: ReadingCreate,
     session: AsyncSession = Depends(get_session),
+    user: User = Depends(get_current_user),
 ) -> ReadingResponse:
-    reading = await readings_service.create_reading(session, payload)
+    reading = await readings_service.create_reading(session, user, payload)
     return _to_response(await _load(session, reading.id))
 
 
@@ -53,6 +55,7 @@ async def create_reading(
 async def get_reading(
     reading_id: UUID,
     session: AsyncSession = Depends(get_session),
+    user: User = Depends(get_current_user),
 ) -> ReadingResponse:
     reading = await _load(session, reading_id)
     if reading is None:
