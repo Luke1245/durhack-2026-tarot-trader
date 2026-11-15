@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="800" height="740" viewBox="0 0 800 740" fill="none" xmlns="http://www.w3.org/2000/svg">
+<ellipse id="Soft plum aura" cx="400" cy="370" rx="400" ry="370" fill="url(#paint0_radial_0_98)"/>
+<defs>
+<radialGradient id="paint0_radial_0_98" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(400 370) scale(400 370)">
+<stop stop-color="#37233F" stop-opacity="0.75"/>
+<stop offset="1" stop-color="#0B0910" stop-opacity="0"/>
+</radialGradient>
+</defs>
+</svg>
