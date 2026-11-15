@@ -167,3 +167,19 @@
     @apply bg-background text-foreground;}
   html {
     @apply font-sans;}}
+
+@keyframes tarot-shuffle {
+  0% { transform: rotate(-5deg) translateX(-5px) translateY(1px); }
+  100% { transform: rotate(6deg) translateX(6px) translateY(-3px); }
+}
+
+.deck-shuffling .deck-top-card {
+  animation: tarot-shuffle 420ms ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-shuffling .deck-top-card {
+    animation: none;
+    transform: rotate(2deg);
+  }
+}
