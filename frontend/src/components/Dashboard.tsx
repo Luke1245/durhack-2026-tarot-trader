@@ -21,7 +21,7 @@ const MARKETS: { value: Market; label: string }[] = [
 ]
 const POSITION_COPY = [
   { label: 'What happened', helper: 'Recent moves and what drove them.' },
-  { label: 'What to do now', helper: 'Buy, sell or wait—the card’s view.' },
+  { label: 'What to do now', helper: 'What do the cards believe is your best move' },
   { label: 'What might happen', helper: 'What the cards suggest for the asset.' },
 ]
 
