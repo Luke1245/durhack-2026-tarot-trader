@@ -120,6 +120,53 @@ async def test_reading_continues_when_news_is_empty(client, monkeypatch):
     assert body["event_url"] is None
 
 
+async def test_rapid_readings_share_news_fetch_within_cache_ttl(client, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.services import advice, news
+
+    categories_fetched = []
+
+    class EmptyNewsResponse:
+        status_code = 200
+
+        def json(self):
+            return []
+
+    class FakeAsyncClient:
+        def __init__(self, timeout):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_args):
+            return None
+
+        async def get(self, _url, *, params):
+            categories_fetched.append(params["category"])
+            return EmptyNewsResponse()
+
+    async def unavailable(*_args, **_kwargs):
+        raise RuntimeError("exercise deterministic fallback")
+
+    monkeypatch.setattr(news, "_cache", {})
+    monkeypatch.setattr(news, "_locks", {})
+    monkeypatch.setattr(
+        news, "get_settings", lambda: SimpleNamespace(finnhub_api_key="test-key")
+    )
+    monkeypatch.setattr(news, "httpx", SimpleNamespace(AsyncClient=FakeAsyncClient))
+    monkeypatch.setattr(advice, "_gemini_advice", unavailable)
+    await client.post("/api/auth/register", json=USER)
+
+    for _ in range(5):
+        response = await client.post("/api/readings", json={"market": "stocks"})
+        assert response.status_code == 201
+        assert response.json()["event_headline"] is None
+
+    assert categories_fetched == ["general"]
+
+
 @pytest.mark.parametrize(
     ("model_headline", "expected_headline", "expected_url"),
     [

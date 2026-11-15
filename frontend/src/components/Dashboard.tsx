@@ -12,7 +12,7 @@ type DrawnCardModel = components['schemas']['DrawnCard']
 const POSITIONS = ['past', 'present', 'future'] as const
 const SHUFFLE_INTERVAL_MS = 120
 
-type Phase = 'idle' | 'shuffling' | 'revealed'
+type Phase = 'idle' | 'shuffling' | 'waiting' | 'revealed'
 type ReadingCreate = components['schemas']['ReadingCreate']
 type Market = NonNullable<ReadingCreate['market']>
 
@@ -32,7 +32,6 @@ export function Dashboard() {
 
   const [phase, setPhase] = useState<Phase>('idle')
   const [market, setMarket] = useState<Market>('all')
-  const [awaitingReveal, setAwaitingReveal] = useState(false)
   const [flashing, setFlashing] = useState<(string | null)[]>([null, null, null])
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -44,24 +43,18 @@ export function Dashboard() {
     // forever because the mutation object's identity changes every render
   }, [])
 
-  // The draw is decided the moment shuffling starts; STOP only reveals it.
-  useEffect(() => {
-    if (!awaitingReveal) return
-    if (createReading.isSuccess) {
-      setAwaitingReveal(false)
-      setPhase('revealed')
-    } else if (createReading.isError) {
-      setAwaitingReveal(false)
-      setPhase('idle')
-    }
-  }, [awaitingReveal, createReading.isSuccess, createReading.isError])
 
   function startShuffle() {
     if (!cards.data?.length) return
     setPhase('shuffling')
-    setAwaitingReveal(false)
     createReading.reset()
-    createReading.mutate({ market }) // fire and forget: server draws + consults Gemini now
+    createReading.mutate(
+      { market },
+      {
+        onSuccess: () => setPhase((current) => current === 'waiting' ? 'revealed' : current),
+        onError: () => setPhase((current) => current === 'waiting' ? 'idle' : current),
+      },
+    )
     timer.current = setInterval(() => {
       setFlashing([shufflePick(cards.data!), shufflePick(cards.data!), shufflePick(cards.data!)].map((c) => c.image_path))
     }, SHUFFLE_INTERVAL_MS)
@@ -76,7 +69,7 @@ export function Dashboard() {
     } else if (createReading.isError) {
       setPhase('idle')
     } else {
-      setAwaitingReveal(true) // still in flight: reveal via effect when it lands
+      setPhase('waiting') // reveal automatically when the reading finishes
     }
   }
 
@@ -90,7 +83,7 @@ export function Dashboard() {
             key={m.value}
             type="button"
             onClick={() => setMarket(m.value)}
-            disabled={phase === 'shuffling'}
+            disabled={phase === 'shuffling' || phase === 'waiting'}
             className={
               market === m.value
                 ? 'rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground'
@@ -128,7 +121,7 @@ export function Dashboard() {
           <Button
             size="lg"
             onClick={phase === 'shuffling' ? stopShuffle : startShuffle}
-            disabled={awaitingReveal}
+            disabled={phase === 'waiting'}
           >
             {phase === 'shuffling'
               ? 'STOP'
