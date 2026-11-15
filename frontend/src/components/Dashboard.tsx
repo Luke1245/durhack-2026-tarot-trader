@@ -289,44 +289,58 @@ function AdviceBlock({ reading, onDecline, onTaken }: { reading: Reading; onDecl
       <p className="text-[10px] tracking-[1.8px] text-home-gold">
         {reading.asset ? `${reading.asset.name.toUpperCase()} / ${reading.asset.symbol}` : 'READING RESULT'}
       </p>
-      <div className="mt-2 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-        <h2 id="reading-result-title" className="font-display text-[28px] leading-[1.15] text-home-text sm:text-[33px]">
-          {taken ? 'Position opened. May the cards be right.' : reading.interpretation}
+      <div className="mt-2">
+        <h2 id="reading-result-title" className="font-display text-[36px] leading-[1.1] text-home-text sm:text-[44px]">
+          {taken
+            ? 'Position opened. May the cards be right.'
+            : reading.asset && reading.side
+              ? (
+                <>
+                  The cards advise{' '}
+                  <span className={reading.side === 'long' ? 'text-[#9dc3ab]' : 'text-[#e3a29b]'}>
+                    {reading.side.toUpperCase()}
+                  </span>{' '}
+                  on {reading.asset.name} ({reading.asset.symbol}).
+                </>
+              )
+              : reading.interpretation}
         </h2>
-        {taken ? (
-          <Button variant="outline" onClick={onTaken} className="shrink-0 border-home-border bg-transparent text-home-text hover:bg-home-surface hover:text-home-text">
-            Draw again
-          </Button>
-        ) : reading.asset && reading.side ? (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Input
-              type="number"
-              min="0"
-              step="any"
-              placeholder="Amount (shares)"
-              aria-label="Amount in shares"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              className="w-full border-home-border bg-[#100d16] text-home-text placeholder:text-home-muted sm:w-40"
-            />
-            <Button
-              disabled={!Number.isFinite(quantity) || quantity <= 0 || createPosition.isPending}
-              onClick={() => takeAdvice().catch(() => undefined)}
-              className="shrink-0 bg-home-gold text-home-background hover:bg-home-gold/90"
-            >
-              {createPosition.isPending ? 'Opening…' : 'Take the advice'}
-            </Button>
-          </div>
-        ) : (
-          <p className="text-[13px] text-[#aaa0b1]">No tradeable assets are available for this draw.</p>
+        {!taken && reading.asset && reading.side && (
+          <p className="mt-4 max-w-4xl text-[14px] leading-[1.6] text-[#aaa0b1] sm:text-[16px]">
+            {reading.interpretation}
+          </p>
         )}
       </div>
+      {taken ? (
+        <Button variant="outline" onClick={onTaken} className="mt-5 shrink-0 border-home-border bg-transparent text-home-text hover:bg-home-surface hover:text-home-text">
+          Draw again
+        </Button>
+      ) : reading.asset && reading.side ? (
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Input
+            type="number"
+            min="0"
+            step="any"
+            placeholder="Amount (shares)"
+            aria-label="Amount in shares"
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
+            className="w-full border-home-border bg-[#100d16] text-home-text placeholder:text-home-muted sm:w-40"
+          />
+          <Button
+            disabled={!Number.isFinite(quantity) || quantity <= 0 || createPosition.isPending}
+            onClick={() => takeAdvice().catch(() => undefined)}
+            className="shrink-0 bg-home-gold text-home-background hover:bg-home-gold/90"
+          >
+            {createPosition.isPending ? 'Opening…' : 'Take the advice'}
+          </Button>
+        </div>
+      ) : (
+        <p className="mt-5 text-[13px] text-[#aaa0b1]">No tradeable assets are available for this draw.</p>
+      )}
       {createPosition.isError && <p className="mt-3 text-[12px] text-[#e3a29b]" role="alert">Could not open the position. Try again.</p>}
       {reading.asset && reading.side && !taken && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-home-border/70 pt-4">
-          <p className="text-[13px] text-[#aaa0b1]">
-            The cards advise <span className={reading.side === 'long' ? 'text-[#9dc3ab]' : 'text-[#e3a29b]'}>{reading.side.toUpperCase()}</span> on {reading.asset.name} ({reading.asset.symbol}).
-          </p>
+        <div className="mt-4 flex justify-end border-t border-home-border/70 pt-4">
           <Button variant="ghost" onClick={onDecline} className="text-home-muted hover:bg-home-surface hover:text-home-text">Decline</Button>
         </div>
       )}
