@@ -365,10 +365,11 @@ function DrawnCard({ card }: { card: DrawnCardModel }) {
             <span className="flex size-full items-center justify-center bg-[#17121f] p-3 text-center font-display text-[22px] text-home-text">{card.name}</span>
           )}
           {card.narrative && (
-            <span className="absolute inset-0 flex flex-col justify-center gap-2 overflow-y-auto bg-[#100c17]/95 p-3 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-              <span className="text-[10px] font-medium uppercase tracking-[1.4px] text-home-gold">{card.position}</span>
-              <span className="text-[12px] leading-[1.45] text-home-text">{card.narrative}</span>
-              <span className="text-[9px] text-home-muted">Click for card meaning</span>
+            <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 overflow-y-auto bg-[#100c17]/95 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
+              <span className="font-display text-[20px] text-home-text">{card.name}</span>
+              {card.reversed && <span className="text-xs text-[#e3a29b]">reversed</span>}
+              <span className="text-[11px] leading-[1.4] text-[#aaa0b1]">{card.meaning}</span>
+              <span className="text-[9px] text-home-muted">Click to keep this view</span>
             </span>
           )}
         </>
