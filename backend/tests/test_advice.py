@@ -23,6 +23,8 @@ async def test_fallback_advice_when_no_gemini(client, monkeypatch):
     assert body["side"] == expected_side
     assert body["asset"]["symbol"] in {"AAAA", "BBBB"}
     assert all(c["narrative"] for c in body["cards"])
+    assert all(card["meaning"] in body["interpretation"] for card in body["cards"])
+    assert "Together, these three meanings" in body["interpretation"]
 
 
 async def test_gemini_advice_used_when_available(client, monkeypatch):

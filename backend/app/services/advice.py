@@ -32,14 +32,15 @@ ADVICE_PROMPT = """You are a tarot-trading oracle. A user drew three tarot cards
    that best connects to that asset and the spread.
 3. If no supplied headline is relevant, set event_headline to null and choose
    the asset that best fits the spread.
-4. Write a one-paragraph reasoning connecting the three cards to the asset and
-   the selected event when one exists.
+4. Write one-paragraph reasoning that names and explains the meaning of each
+   of the three cards in its past/present/future position, then explain how
+   those meanings combine into the overall reading and connect to the asset.
+   Include the selected event when one exists. Do not add a question preamble.
 5. For each card, write a short narrative relating it to the asset's price:
    past = the asset's recent history, present = its current situation,
    future = where it is heading.
-
-Be decisive: always pick exactly one side and one asset. Never invent a
-headline; event_headline must exactly match a supplied headline or be null.
+6. Be decisive: always pick exactly one side and one asset. Never invent a
+   headline; event_headline must exactly match a supplied headline or be null.
 
 Drawn cards:
 {cards}
@@ -148,10 +149,6 @@ async def _gemini_advice(
         None,
     )
     reasoning = raw.reasoning.strip()
-    if event and event.headline.casefold() not in reasoning.casefold():
-        reasoning = (
-            f'{reasoning} The spread is interpreted in light of "{event.headline}".'
-        ).strip()
     return Advice(
         side=raw.side,
         asset=asset,
@@ -211,9 +208,13 @@ def _fallback_advice(
         for card, position, rev in drawn
     }
     direction = "upward" if side == "long" else "downward"
+    card_readings = " ".join(
+        f"{position.title()} — {card.name}: {card.reversed_ if rev else card.upright}"
+        for card, position, rev in drawn
+    )
     reasoning = (
-        f"Taken together, the spread tilts {direction} for {symbol}. "
-        f"The cards counsel {side}."
+        f"{card_readings} Together, these three meanings suggest {direction} "
+        f"movement for {symbol}, so the spread leans {side}."
     )
     if event_headline:
         reasoning += f' The asset was selected in light of "{event_headline}".'

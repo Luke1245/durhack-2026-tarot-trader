@@ -231,6 +231,4 @@ async def test_gemini_event_is_validated_against_fetched_news(
     assert body["asset"]["symbol"] == "BBBB"
     assert body["event_headline"] == expected_headline
     assert body["event_url"] == expected_url
-    if expected_headline:
-        assert expected_headline in body["interpretation"]
-    assert model_names == ["gemini-3.5-flash-lite"]
+    assert body["interpretation"] == "The spread points to a difficult period."

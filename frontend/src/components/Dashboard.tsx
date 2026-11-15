@@ -291,11 +291,7 @@ function AdviceBlock({ reading, onDecline, onTaken }: { reading: Reading; onDecl
       </p>
       <div className="mt-2 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         <h2 id="reading-result-title" className="font-display text-[28px] leading-[1.15] text-home-text sm:text-[33px]">
-          {taken
-            ? 'Position opened. May the cards be right.'
-            : reading.side
-              ? `${reading.side === 'short' ? 'Sell' : 'Buy'} · ${reading.interpretation}`
-              : reading.interpretation}
+          {taken ? 'Position opened. May the cards be right.' : reading.interpretation}
         </h2>
         {taken ? (
           <Button variant="outline" onClick={onTaken} className="shrink-0 border-home-border bg-transparent text-home-text hover:bg-home-surface hover:text-home-text">
