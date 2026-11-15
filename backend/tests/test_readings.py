@@ -166,8 +166,11 @@ async def test_gemini_event_is_validated_against_fetched_news(
         }
     )
 
+    model_names = []
+
     class FakeModels:
-        async def generate_content(self, **_kwargs):
+        async def generate_content(self, **kwargs):
+            model_names.append(kwargs["model"])
             return SimpleNamespace(text=generated)
 
     fake_client = SimpleNamespace(aio=SimpleNamespace(models=FakeModels()))
@@ -183,3 +186,4 @@ async def test_gemini_event_is_validated_against_fetched_news(
     assert body["event_url"] == expected_url
     if expected_headline:
         assert expected_headline in body["interpretation"]
+    assert model_names == ["gemini-3.5-flash-lite"]

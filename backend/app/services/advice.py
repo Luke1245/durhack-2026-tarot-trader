@@ -119,7 +119,7 @@ async def _gemini_advice(
 
     client = genai.Client(api_key=key)
     response = await client.aio.models.generate_content(
-        model="gemini-3.8-flash",
+        model="gemini-3.5-flash-lite",
         contents=ADVICE_PROMPT.format(
             cards=cards_text,
             assets=assets_text,
