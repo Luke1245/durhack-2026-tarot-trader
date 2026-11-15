@@ -27,19 +27,28 @@ ADVICE_PROMPT = """You are a tarot-trading oracle. A user drew three tarot cards
 
 1. Decide a sentiment: does the spread predict the chosen asset's price will
    RISE (long) or FALL (short)?
-2. Choose ONE asset from the provided tradeable list that best fits the spread.
-3. Write a one-paragraph reasoning connecting the three cards to that asset.
-4. For each card, write a short narrative relating it to the asset's price:
+2. Use the cards as the market mood and headlines as real-world context.
+   Jointly choose one tradeable asset and, when relevant, the exact headline
+   that best connects to that asset and the spread.
+3. If no supplied headline is relevant, set event_headline to null and choose
+   the asset that best fits the spread.
+4. Write a one-paragraph reasoning connecting the three cards to the asset and
+   the selected event when one exists.
+5. For each card, write a short narrative relating it to the asset's price:
    past = the asset's recent history, present = its current situation,
    future = where it is heading.
 
-Be decisive: always pick exactly one side and one asset.
+Be decisive: always pick exactly one side and one asset. Never invent a
+headline; event_headline must exactly match a supplied headline or be null.
 
 Drawn cards:
 {cards}
 
 Tradeable assets:
-{assets}"""
+{assets}
+
+Recent headlines:
+{headlines}"""
 
 
 @dataclass
@@ -61,6 +70,10 @@ class _GeminiAdvice(BaseModel):
 
     side: Literal["long", "short"]
     asset_symbol: str = Field(description="Symbol from the provided tradeable list")
+    event_headline: str | None = Field(
+        default=None,
+        description="Exact headline from the recent headlines list, or null",
+    )
     reasoning: str
     cards: list[_CardAdvice] = Field(min_length=3, max_length=3)
 
@@ -72,12 +85,19 @@ async def get_advice(
 ) -> Advice:
     """Never raises: any Gemini failure degrades to the deterministic fallback."""
     try:
-        return await asyncio.wait_for(_gemini_advice(drawn, assets), timeout=ADVICE_TIMEOUT_SECONDS)
+        return await asyncio.wait_for(
+            _gemini_advice(drawn, assets, news_items or []),
+            timeout=ADVICE_TIMEOUT_SECONDS,
+        )
     except Exception:
         logger.exception("Gemini advice failed; using deterministic fallback")
         return _fallback_advice(drawn, assets, news_items or [])
 
-async def _gemini_advice(drawn: list[tuple[TarotCard, str, bool]], assets: list[Asset]) -> Advice:
+async def _gemini_advice(
+    drawn: list[tuple[TarotCard, str, bool]],
+    assets: list[Asset],
+    news_items: list[NewsItem],
+) -> Advice:
     from google import genai
     from google.genai import types
 
@@ -93,11 +113,18 @@ async def _gemini_advice(drawn: list[tuple[TarotCard, str, bool]], assets: list[
         for card, position, rev in drawn
     )
     assets_text = "\n".join(f"- {a.symbol}: {a.name}" for a in assets)
+    headlines_text = "\n".join(f"- {item.headline}" for item in news_items)
+    if not headlines_text:
+        headlines_text = "- None available."
 
     client = genai.Client(api_key=key)
     response = await client.aio.models.generate_content(
-        model="gemini-3.8-flash",
-        contents=ADVICE_PROMPT.format(cards=cards_text, assets=assets_text),
+        model="gemini-3.5-flash-lite",
+        contents=ADVICE_PROMPT.format(
+            cards=cards_text,
+            assets=assets_text,
+            headlines=headlines_text,
+        ),
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
             response_schema=_GeminiAdvice,
@@ -115,7 +142,24 @@ async def _gemini_advice(drawn: list[tuple[TarotCard, str, bool]], assets: list[
     asset = next((a for a in assets if a.symbol == symbol), None)
     if asset is None:
         raise RuntimeError(f"Gemini chose unknown asset {symbol!r}")
-    return Advice(side=raw.side, asset=asset, reasoning=raw.reasoning, narratives=narratives)
+
+    event = next(
+        (item for item in news_items if item.headline == raw.event_headline),
+        None,
+    )
+    reasoning = raw.reasoning.strip()
+    if event and event.headline.casefold() not in reasoning.casefold():
+        reasoning = (
+            f'{reasoning} The spread is interpreted in light of "{event.headline}".'
+        ).strip()
+    return Advice(
+        side=raw.side,
+        asset=asset,
+        reasoning=reasoning,
+        narratives=narratives,
+        event_headline=event.headline if event else None,
+        event_url=event.url if event else None,
+    )
 
 
 def _fallback_advice(
