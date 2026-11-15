@@ -18,9 +18,9 @@ const READING_PATHS: ReadingPath[] = [
   {
     page: 'draw',
     symbol: '✧',
-    eyebrow: 'DISCOVER OPPORTUNITIES',
+    eyebrow: 'YOUR NEXT OPPORTUNITY',
     title: 'Pick a trade',
-    description: ['Start the shuffle, stop the deck, and let', 'three cards decide your next trade.'],
+    description: ['Draw three cards to tap into your intuition and the wisdom of the universe.'],
     action: 'Pick trade  ↗',
     tag: 'DISCOVER',
     className: 'border-home-border bg-home-surface hover:bg-home-surface',
@@ -28,7 +28,7 @@ const READING_PATHS: ReadingPath[] = [
   {
     page: 'portfolio',
     symbol: '☾',
-    eyebrow: 'KEEP YOUR BALANCE',
+    eyebrow: 'YOUR PREVIOUS POSITIONS',
     title: 'View portfolio',
     description: ['See your holdings, track performance,', 'and understand your exposure.'],
     action: 'View portfolio  ↗',
@@ -58,10 +58,6 @@ export function ReadingPaths({ onNavigate }: ReadingPathsProps) {
         >
           Your next move starts here.
         </h2>
-        <p className="mt-3 text-[14px] leading-[1.6] text-home-muted min-[1200px]:absolute min-[1200px]:left-[1004px] min-[1200px]:top-[129px] min-[1200px]:mt-0 min-[1200px]:w-[364px]">
-          Two ways to find your perspective.
-        </p>
-
         <div className="mx-auto mt-10 grid max-w-[856px] gap-6 md:grid-cols-2 min-[1200px]:absolute min-[1200px]:left-1/2 min-[1200px]:top-[206px] min-[1200px]:mt-0 min-[1200px]:w-[856px] min-[1200px]:max-w-none min-[1200px]:-translate-x-1/2">
           {READING_PATHS.map((path) => (
             <ReadingPathCard key={path.page} path={path} onNavigate={onNavigate} />

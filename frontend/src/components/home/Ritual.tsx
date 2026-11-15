@@ -34,10 +34,6 @@ export function Ritual() {
         >
           Tap in to your intuition
         </h2>
-        <p className="mt-3 text-[14px] leading-[1.6] text-home-muted min-[1200px]:absolute min-[1200px]:left-[805px] min-[1200px]:top-[128px] min-[1200px]:mt-0 min-[1200px]:w-[565px]">
-          Your next move is in the cards.
-        </p>
-
         <div className="hidden min-[1200px]:absolute min-[1200px]:left-[90px] min-[1200px]:right-[110px] min-[1200px]:top-[219px] min-[1200px]:h-px min-[1200px]:bg-home-border min-[1200px]:block" />
         <ol className="mt-10 grid gap-10 min-[1200px]:absolute min-[1200px]:left-[72px] min-[1200px]:right-[72px] min-[1200px]:top-[199px] min-[1200px]:mt-0 min-[1200px]:grid-cols-3 min-[1200px]:gap-6">
           {STEPS.map((step) => (
