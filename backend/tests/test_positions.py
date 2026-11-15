@@ -62,6 +62,8 @@ async def test_open_position_uses_current_price(client, fake_prices):
     assert body["entry_price"] == 200  # from the stub, not the DB default
     assert body["status"] == "open"
     assert body["pnl"] == 0  # current == entry
+    assert body["asset_symbol"] == "AAPL"
+    assert body["asset_name"] == "Apple"
 
 
 async def test_short_position_pnl_direction(client, fake_prices):

@@ -36,10 +36,12 @@ export default function App() {
       />
       {page === 'home' ? (
         <HomePage onNavigate={setPage} />
-      ) : (
+      ) : page === 'draw' ? (
         <main className="mx-auto max-w-5xl px-4">
-          {page === 'draw' ? <Dashboard /> : <PortfolioPage />}
+          <Dashboard />
         </main>
+      ) : (
+        <PortfolioPage />
       )}
     </div>
   )

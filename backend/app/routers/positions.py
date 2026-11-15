@@ -27,6 +27,7 @@ def to_response(position: Position, current_price: Decimal | None = None) -> Pos
         id=position.id,
         asset_id=position.asset_id,
         asset_symbol=position.asset.symbol,
+        asset_name=position.asset.name,
         side=position.side,
         quantity=position.quantity,
         entry_price=position.entry_price,

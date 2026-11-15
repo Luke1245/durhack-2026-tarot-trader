@@ -17,6 +17,7 @@ class PositionResponse(BaseModel):
     id: UUID
     asset_id: int
     asset_symbol: str
+    asset_name: str
     side: Literal["long", "short"]
     quantity: float
     entry_price: float
