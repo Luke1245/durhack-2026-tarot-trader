@@ -118,3 +118,68 @@ async def test_reading_continues_when_news_is_empty(client, monkeypatch):
     body = response.json()
     assert body["event_headline"] is None
     assert body["event_url"] is None
+
+
+@pytest.mark.parametrize(
+    ("model_headline", "expected_headline", "expected_url"),
+    [
+        (
+            "Apple announces new product",
+            "Apple announces new product",
+            "https://news.example/apple",
+        ),
+        ("Unlisted market rumor", None, None),
+    ],
+)
+async def test_gemini_event_is_validated_against_fetched_news(
+    client, monkeypatch, model_headline, expected_headline, expected_url
+):
+    import json
+    from types import SimpleNamespace
+
+    from google import genai
+
+    from app.services import advice, news
+
+    async def recent_news(_market):
+        return [
+            news.NewsItem(
+                headline="Apple announces new product",
+                url="https://news.example/apple",
+            )
+        ]
+
+    monkeypatch.setattr(news, "recent_news", recent_news)
+    monkeypatch.setattr(
+        advice, "get_settings", lambda: SimpleNamespace(gemini_api_key="test-key")
+    )
+    generated = json.dumps(
+        {
+            "side": "short",
+            "asset_symbol": "BBBB",
+            "event_headline": model_headline,
+            "reasoning": "The spread points to a difficult period.",
+            "cards": [
+                {"position": position, "narrative": f"{position} narrative"}
+                for position in ("past", "present", "future")
+            ],
+        }
+    )
+
+    class FakeModels:
+        async def generate_content(self, **_kwargs):
+            return SimpleNamespace(text=generated)
+
+    fake_client = SimpleNamespace(aio=SimpleNamespace(models=FakeModels()))
+    monkeypatch.setattr(genai, "Client", lambda **_kwargs: fake_client)
+    await client.post("/api/auth/register", json=USER)
+
+    response = await client.post("/api/readings", json={"market": "stocks"})
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["asset"]["symbol"] == "BBBB"
+    assert body["event_headline"] == expected_headline
+    assert body["event_url"] == expected_url
+    if expected_headline:
+        assert expected_headline in body["interpretation"]

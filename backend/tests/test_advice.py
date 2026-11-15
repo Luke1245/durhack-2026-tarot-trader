@@ -17,8 +17,10 @@ async def test_fallback_advice_when_no_gemini(client, monkeypatch):
     monkeypatch.setattr("app.services.advice.get_settings", lambda: SimpleNamespace(gemini_api_key=""))
     body = await _draw(client)
 
-    # test cards are all "yes" -> score >= 0 -> long; fallback still advises
-    assert body["side"] == "long"
+    # The fixture's cards all vote yes, but reversed cards invert that verdict.
+    reversed_count = sum(card["reversed"] for card in body["cards"])
+    expected_side = "short" if reversed_count >= 2 else "long"
+    assert body["side"] == expected_side
     assert body["asset"]["symbol"] in {"AAAA", "BBBB"}
     assert all(c["narrative"] for c in body["cards"])
 
@@ -26,7 +28,7 @@ async def test_fallback_advice_when_no_gemini(client, monkeypatch):
 async def test_gemini_advice_used_when_available(client, monkeypatch):
     from app.services import advice
 
-    async def fake_gemini(drawn, assets):
+    async def fake_gemini(drawn, assets, news_items):
         chosen = next(a for a in assets if a.symbol == "BBBB")
         return advice.Advice(
             side="short",
@@ -47,7 +49,7 @@ async def test_gemini_advice_used_when_available(client, monkeypatch):
 async def test_fallback_on_gemini_failure(client, monkeypatch):
     from app.services import advice
 
-    async def broken(drawn, assets):
+    async def broken(drawn, assets, news_items):
         raise RuntimeError("quota exceeded")
 
     monkeypatch.setattr(advice, "_gemini_advice", broken)
@@ -60,7 +62,7 @@ async def test_malformed_gemini_falls_back(client, monkeypatch):
     # wrong card count must not 500 — it degrades to the fallback
     from app.services import advice
 
-    async def malformed(drawn, assets):
+    async def malformed(drawn, assets, news_items):
         raise ValueError("zip length mismatch stands in for malformed output")
 
     monkeypatch.setattr(advice, "_gemini_advice", malformed)
