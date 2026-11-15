@@ -4,6 +4,9 @@ import softPlumAura from '@/assets/home/soft-plum-aura.svg'
 import starCard from '@/assets/home/star-card.svg'
 import sunCard from '@/assets/home/sun-card.svg'
 import type { AppPage } from '@/components/AppHeader'
+import { Invitation } from '@/components/home/Invitation'
+import { ReadingPaths } from '@/components/home/ReadingPaths'
+import { Ritual } from '@/components/home/Ritual'
 import { Button } from '@/components/ui/button'
 
 type HomePageProps = {
@@ -73,6 +76,9 @@ export function HomePage({ onNavigate }: HomePageProps) {
           ✧
         </p>
       </section>
+      <Invitation />
+      <ReadingPaths onNavigate={onNavigate} />
+      <Ritual />
     </main>
   )
 }
