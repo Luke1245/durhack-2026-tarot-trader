@@ -4,10 +4,17 @@ import softPlumAura from '@/assets/home/soft-plum-aura.svg'
 import starCard from '@/assets/home/star-card.svg'
 import sunCard from '@/assets/home/sun-card.svg'
 import type { AppPage } from '@/components/AppHeader'
+import { FinalInvitation } from '@/components/home/FinalInvitation'
+import { HomeFooter } from '@/components/home/HomeFooter'
+import { Invitation } from '@/components/home/Invitation'
+import { ReadingPaths } from '@/components/home/ReadingPaths'
+import { Reflection } from '@/components/home/Reflection'
+import { Ritual } from '@/components/home/Ritual'
+import { TheStar } from '@/components/home/TheStar'
 import { Button } from '@/components/ui/button'
 
 type HomePageProps = {
-  onNavigate: (page: Exclude<AppPage, 'home'>) => void
+  onNavigate: (page: AppPage) => void
 }
 
 export function HomePage({ onNavigate }: HomePageProps) {
@@ -25,7 +32,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
         />
 
         <p className="relative z-10 text-[10px] leading-[1.6] tracking-[2px] text-home-gold min-[1200px]:absolute min-[1200px]:left-[72px] min-[1200px]:top-[98px] min-[1200px]:w-[600px] min-[1200px]:text-[11px] min-[1200px]:tracking-[2.4px]">
-          A LITTLE INTUITION. A CLEARER STRATEGY.
+          Your next trade is written in the stars
         </p>
 
         <h1
@@ -40,8 +47,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
         </p>
 
         <div className="relative z-10 mt-6 max-w-[575px] text-[15px] leading-[1.6] text-home-muted min-[1200px]:absolute min-[1200px]:left-[78px] min-[1200px]:top-[438px] min-[1200px]:mt-0 min-[1200px]:w-[575px] min-[1200px]:text-[16px]">
-          <p>Shuffle the deck. Deal your trade. Ask the cards for a yes or no.</p>
-          <p>A trading ritual led by tarot.</p>
+          <p>Read your fortune to make a decision informed by many realms</p>
         </div>
 
         <div className="relative z-10 mt-8 flex flex-wrap items-center gap-4 min-[1200px]:absolute min-[1200px]:left-[78px] min-[1200px]:top-[534px] min-[1200px]:mt-0 min-[1200px]:flex-nowrap min-[1200px]:gap-0">
@@ -60,10 +66,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
           </button>
         </div>
 
-        <p className="relative z-10 mt-8 text-[9px] leading-[1.6] tracking-[1.2px] text-home-muted min-[1200px]:absolute min-[1200px]:left-[78px] min-[1200px]:top-[616px] min-[1200px]:mt-0 min-[1200px]:w-[580px] min-[1200px]:text-[10px] min-[1200px]:tracking-[1.4px]">
-          PAPER TRADING&nbsp;&nbsp;·&nbsp;&nbsp;EXAMPLE DATA&nbsp;&nbsp;·&nbsp;&nbsp;NO REAL ORDERS
-        </p>
-
         <CelestialArtwork />
 
         <p
@@ -73,6 +75,13 @@ export function HomePage({ onNavigate }: HomePageProps) {
           ✧
         </p>
       </section>
+      <Invitation />
+      <ReadingPaths onNavigate={onNavigate} />
+      <Ritual />
+      <TheStar />
+      <Reflection />
+      <FinalInvitation onNavigate={onNavigate} />
+      <HomeFooter onNavigate={onNavigate} />
     </main>
   )
 }
@@ -119,7 +128,7 @@ function CelestialArtwork() {
       </div>
 
       <p className="absolute inset-x-0 bottom-[7%] mx-auto w-full max-w-[400px] text-center text-[9px] leading-[1.6] tracking-[1.6px] text-home-gold min-[1200px]:left-[202px] min-[1200px]:right-auto min-[1200px]:top-[650px] min-[1200px]:bottom-auto min-[1200px]:text-[10px] min-[1200px]:tracking-[2px]">
-        STAY CURIOUS. TRADE WITH A PLAN.
+        EXPAND YOUR HORIZONS… AND YOUR PORTFOLIO
       </p>
     </div>
   )
