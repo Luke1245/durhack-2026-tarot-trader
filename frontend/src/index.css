@@ -81,8 +81,12 @@
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-home-sans: 'DM Sans', sans-serif;
   --color-home-background: #0b0910;
+  --color-home-band: #100d16;
   --color-home-surface: #15111d;
+  --color-home-elevated: #1c1527;
+  --color-home-badge: #302738;
   --color-home-border: #352c40;
+  --color-home-gold-border: #776345;
   --color-home-gold: #cfb884;
   --color-home-text: #eee8df;
   --color-home-muted: #a49bab;
