@@ -308,6 +308,8 @@ export interface components {
             asset_id: number;
             /** Asset Symbol */
             asset_symbol: string;
+            /** Asset Name */
+            asset_name: string;
             /**
              * Side
              * @enum {string}
