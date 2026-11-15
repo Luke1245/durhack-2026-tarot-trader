@@ -22,6 +22,8 @@ def _to_response(reading: Reading) -> ReadingResponse:
         created_at=reading.created_at,
         side=reading.side,
         asset=reading.asset,
+        event_headline=reading.event_headline,
+        event_url=reading.event_url,
         cards=[
             DrawnCard(
                 card_id=rc.card.id,

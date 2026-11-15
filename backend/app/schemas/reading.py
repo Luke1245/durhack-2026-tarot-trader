@@ -33,4 +33,6 @@ class ReadingResponse(BaseModel):
     created_at: datetime
     side: Literal["long", "short"] | None
     asset: AssetResponse | None
+    event_headline: str | None
+    event_url: str | None
     cards: list[DrawnCard]

@@ -369,6 +369,10 @@ export interface components {
             /** Side */
             side: ("long" | "short") | null;
             asset: components["schemas"]["AssetResponse"] | null;
+            /** Event Headline */
+            event_headline: string | null;
+            /** Event Url */
+            event_url: string | null;
             /** Cards */
             cards: components["schemas"]["DrawnCard"][];
         };
