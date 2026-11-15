@@ -293,7 +293,7 @@ export function PortfolioPage() {
                 id="portfolio-title"
                 className="mt-5 font-display text-[46px] leading-[1.08] text-home-text sm:text-[56px] lg:text-[66px]"
               >
-                Your portfolio, in balance.
+                Your Portfolio.
               </h1>
               <p className="mt-5 max-w-3xl text-[14px] leading-[1.5] text-home-muted sm:text-[16px]">
                 A clear view of what you hold, how it’s performing, and where you’re exposed.
@@ -338,7 +338,7 @@ export function PortfolioPage() {
           <section className="min-h-[273px] rounded-[6px] border border-home-border bg-home-surface px-5 pb-5 pt-5 sm:px-[25px] sm:pb-[18px] sm:pt-[18px]" aria-labelledby="performance-title">
             <div className="flex items-center justify-between gap-4 border-b border-home-border pb-10">
               <h2 id="performance-title" className="font-display text-[26px] leading-[1.1] sm:text-[29px]">
-                Your journey so far
+                Your celestial journey
               </h2>
               <span className="shrink-0 text-[10px] tracking-[1.7px] text-home-gold">ALL TIME</span>
             </div>
@@ -407,7 +407,7 @@ export function PortfolioPage() {
           <section className="min-h-[273px] rounded-[6px] border border-home-border bg-home-surface px-5 pb-5 pt-5 sm:px-[25px] sm:pb-[18px] sm:pt-[18px]" aria-labelledby="allocation-title">
             <div className="flex items-center justify-between gap-3">
               <h2 id="allocation-title" className="font-display text-[26px] leading-[1.1] sm:text-[29px]">
-                A balanced perspective
+                Your Positions
               </h2>
             </div>
             {allocation.items.length > 0 ? (
