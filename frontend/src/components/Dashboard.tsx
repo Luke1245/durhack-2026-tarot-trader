@@ -175,9 +175,9 @@ function ReadingProgress({ stage }: { stage: number }) {
 function DeckArtwork({ shuffling }: { shuffling: boolean }) {
   return (
     <div className={`relative mx-auto mt-8 h-[300px] w-[180px] ${shuffling ? 'deck-shuffling' : ''}`} aria-hidden="true">
-      <div className="absolute inset-0 rotate-[6deg] rounded-[6px] border border-[#8d784f] bg-[#21182c]" />
-      <div className="absolute inset-0 -rotate-[5deg] rounded-[6px] border border-[#8d784f] bg-[#21182c]" />
-      <div className="deck-top-card absolute inset-0 overflow-hidden rounded-[6px] border border-[#8d784f] bg-[#17121f]">
+      <div className="deck-card deck-card--bottom absolute inset-0 rounded-[6px] border border-[#8d784f] bg-[#21182c]" />
+      <div className="deck-card deck-card--middle absolute inset-0 rounded-[6px] border border-[#8d784f] bg-[#21182c]" />
+      <div className="deck-card deck-card--top absolute inset-0 overflow-hidden rounded-[6px] border border-[#8d784f] bg-[#17121f]">
         <div className="absolute inset-[8px] rounded-[4px] border border-[#51412f]" />
         <span className="absolute inset-x-0 top-[28px] text-center text-[22px] text-home-gold/80">✧</span>
         <span className="absolute inset-0 flex items-center justify-center font-display text-[72px] text-[#8d784f]/80">✦</span>

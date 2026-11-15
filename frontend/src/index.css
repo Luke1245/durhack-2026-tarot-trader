@@ -173,18 +173,43 @@
   html {
     @apply font-sans;}}
 
-@keyframes tarot-shuffle {
-  0% { transform: rotate(-5deg) translateX(-5px) translateY(1px); }
-  100% { transform: rotate(6deg) translateX(6px) translateY(-3px); }
+@keyframes tarot-shuffle-bottom {
+  0%, 100% { transform: translate(0, 0) rotate(6deg); }
+  25% { transform: translate(-13px, -5px) rotate(-2deg); }
+  50% { transform: translate(9px, 2px) rotate(11deg); }
+  75% { transform: translate(-7px, -3px) rotate(1deg); }
 }
 
-.deck-shuffling .deck-top-card {
-  animation: tarot-shuffle 420ms ease-in-out infinite alternate;
+@keyframes tarot-shuffle-middle {
+  0%, 100% { transform: translate(0, 0) rotate(-5deg); }
+  25% { transform: translate(12px, 3px) rotate(4deg); }
+  50% { transform: translate(-11px, -6px) rotate(-10deg); }
+  75% { transform: translate(8px, 1px) rotate(-1deg); }
+}
+
+@keyframes tarot-shuffle-top {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  20% { transform: translate(-15px, -8px) rotate(-8deg); }
+  40% { transform: translate(13px, 1px) rotate(7deg); }
+  60% { transform: translate(-10px, -5px) rotate(-5deg); }
+  80% { transform: translate(8px, 2px) rotate(4deg); }
+}
+
+.deck-shuffling .deck-card--bottom {
+  animation: tarot-shuffle-bottom 900ms ease-in-out infinite;
+}
+
+.deck-shuffling .deck-card--middle {
+  animation: tarot-shuffle-middle 900ms ease-in-out infinite;
+}
+
+.deck-shuffling .deck-card--top {
+  animation: tarot-shuffle-top 900ms ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .deck-shuffling .deck-top-card {
+  .deck-shuffling .deck-card {
     animation: none;
-    transform: rotate(2deg);
   }
 }
+
