@@ -4,13 +4,17 @@ import softPlumAura from '@/assets/home/soft-plum-aura.svg'
 import starCard from '@/assets/home/star-card.svg'
 import sunCard from '@/assets/home/sun-card.svg'
 import type { AppPage } from '@/components/AppHeader'
+import { FinalInvitation } from '@/components/home/FinalInvitation'
+import { HomeFooter } from '@/components/home/HomeFooter'
 import { Invitation } from '@/components/home/Invitation'
 import { ReadingPaths } from '@/components/home/ReadingPaths'
+import { Reflection } from '@/components/home/Reflection'
 import { Ritual } from '@/components/home/Ritual'
+import { TheStar } from '@/components/home/TheStar'
 import { Button } from '@/components/ui/button'
 
 type HomePageProps = {
-  onNavigate: (page: Exclude<AppPage, 'home'>) => void
+  onNavigate: (page: AppPage) => void
 }
 
 export function HomePage({ onNavigate }: HomePageProps) {
@@ -79,6 +83,10 @@ export function HomePage({ onNavigate }: HomePageProps) {
       <Invitation />
       <ReadingPaths onNavigate={onNavigate} />
       <Ritual />
+      <TheStar />
+      <Reflection />
+      <FinalInvitation onNavigate={onNavigate} />
+      <HomeFooter onNavigate={onNavigate} />
     </main>
   )
 }
