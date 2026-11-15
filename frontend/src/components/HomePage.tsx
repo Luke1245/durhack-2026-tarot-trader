@@ -1,8 +1,5 @@
 import celestialOrbits from '@/assets/home/celestial-orbits.svg'
-import moonCard from '@/assets/home/moon-card.svg'
 import softPlumAura from '@/assets/home/soft-plum-aura.svg'
-import starCard from '@/assets/home/star-card.svg'
-import sunCard from '@/assets/home/sun-card.svg'
 import type { AppPage } from '@/components/AppHeader'
 import { FinalInvitation } from '@/components/home/FinalInvitation'
 import { HomeFooter } from '@/components/home/HomeFooter'
@@ -101,7 +98,7 @@ function CelestialArtwork() {
           <div className="-rotate-17 h-[hypot(35.0776cqw,85.2516cqh)] w-[hypot(64.9224cqw,-14.7484cqh)] flex-none">
             <div className="relative size-full">
               <div className="absolute inset-[-0.18%_-0.32%]">
-                <img src={moonCard} alt="" aria-hidden="true" className="block size-full max-w-none" />
+                <img src="/cards/the-moon.webp" alt="" aria-hidden="true" className="block size-full max-w-none" />
               </div>
             </div>
           </div>
@@ -114,7 +111,7 @@ function CelestialArtwork() {
           <div className="h-[hypot(-35.0776cqw,85.2516cqh)] w-[hypot(64.9224cqw,14.7484cqh)] rotate-17 flex-none">
             <div className="relative size-full">
               <div className="absolute inset-[-0.18%_-0.32%]">
-                <img src={sunCard} alt="" aria-hidden="true" className="block size-full max-w-none" />
+                <img src="/cards/the-sun.webp" alt="" aria-hidden="true" className="block size-full max-w-none" />
               </div>
             </div>
           </div>
@@ -122,7 +119,7 @@ function CelestialArtwork() {
 
         <div className="absolute inset-[13.29%_32.64%_16.71%_32.64%]">
           <div className="absolute inset-[-0.17%_-0.34%]">
-            <img src={starCard} alt="" aria-hidden="true" className="block size-full max-w-none" />
+            <img src="/cards/ace-of-swords.webp" alt="" aria-hidden="true" className="block size-full max-w-none" />
           </div>
         </div>
       </div>
