@@ -35,11 +35,7 @@ async def create_reading(session: AsyncSession, user: User, payload: ReadingCrea
     reading = Reading(
         user_id=user.id,
         question=payload.question,
-        interpretation=(
-            f"Regarding \"{payload.question}\": {advice.reasoning}"
-            if advice.asset
-            else advice.reasoning
-        ),
+        interpretation=advice.reasoning,
         side=advice.side,
         asset_id=advice.asset.id if advice.asset else None,
         event_headline=advice.event_headline,
