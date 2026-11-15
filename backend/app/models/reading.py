@@ -18,6 +18,9 @@ class Reading(Base):
     # the Advice (Gemini or fallback): direction and chosen asset; null pre-advice
     side: Mapped[str | None] = mapped_column(String(5))
     asset_id: Mapped[int | None] = mapped_column(ForeignKey("assets.id"), index=True)
+    # the news event that motivated the pick; null when the pick was event-less
+    event_headline: Mapped[str | None] = mapped_column(Text)
+    event_url: Mapped[str | None] = mapped_column(Text)
 
     user: Mapped["User"] = relationship(back_populates="readings")
     asset: Mapped["Asset | None"] = relationship()

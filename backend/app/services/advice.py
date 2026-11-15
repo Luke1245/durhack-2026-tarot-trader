@@ -8,6 +8,7 @@ the draw must never hard-fail on a model or quota error.
 import asyncio
 import logging
 import random
+import re
 from dataclasses import dataclass
 from typing import Literal
 
@@ -15,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from ..config import get_settings
 from ..models import SPREAD_POSITIONS, Asset, TarotCard
+from .news import NewsItem
 
 logger = logging.getLogger("tarot-trader.advice")
 
@@ -46,7 +48,8 @@ class Advice:
     asset: Asset | None  # None only when no assets are seeded at all
     reasoning: str
     narratives: dict[str, str]  # spread position -> hover narrative
-
+    event_headline: str | None = None
+    event_url: str | None = None
 
 class _CardAdvice(BaseModel):
     position: Literal["past", "present", "future"]
@@ -63,16 +66,16 @@ class _GeminiAdvice(BaseModel):
 
 
 async def get_advice(
-    drawn: list[tuple[TarotCard, str, bool]], assets: list[Asset]
+    drawn: list[tuple[TarotCard, str, bool]],
+    assets: list[Asset],
+    news_items: list[NewsItem] | None = None,
 ) -> Advice:
-    """Never raises: any Gemini failure (quota, timeout, malformed output,
-    unknown asset) degrades to the deterministic fallback."""
+    """Never raises: any Gemini failure degrades to the deterministic fallback."""
     try:
         return await asyncio.wait_for(_gemini_advice(drawn, assets), timeout=ADVICE_TIMEOUT_SECONDS)
     except Exception:
         logger.exception("Gemini advice failed; using deterministic fallback")
-        return _fallback_advice(drawn, assets)
-
+        return _fallback_advice(drawn, assets, news_items or [])
 
 async def _gemini_advice(drawn: list[tuple[TarotCard, str, bool]], assets: list[Asset]) -> Advice:
     from google import genai
@@ -115,7 +118,11 @@ async def _gemini_advice(drawn: list[tuple[TarotCard, str, bool]], assets: list[
     return Advice(side=raw.side, asset=asset, reasoning=raw.reasoning, narratives=narratives)
 
 
-def _fallback_advice(drawn: list[tuple[TarotCard, str, bool]], assets: list[Asset]) -> Advice:
+def _fallback_advice(
+    drawn: list[tuple[TarotCard, str, bool]],
+    assets: list[Asset],
+    news_items: list[NewsItem],
+) -> Advice:
     score = 0
     for card, _position, rev in drawn:
         verdict = (card.yes_no or "").lower()
@@ -126,7 +133,24 @@ def _fallback_advice(drawn: list[tuple[TarotCard, str, bool]], assets: list[Asse
         elif verdict == "no":
             score -= 1
     side = "long" if score > 0 else "short" if score < 0 else random.choice(["long", "short"])
-    asset = random.choice(assets) if assets else None
+
+    event = next(
+        (
+            (asset, item)
+            for item in news_items
+            for asset in assets
+            if _headline_matches(item.headline, asset)
+        ),
+        None,
+    )
+    if event:
+        asset = event[0]
+        event_headline = event[1].headline
+        event_url = event[1].url
+    else:
+        asset = random.choice(assets) if assets else None
+        event_headline = None
+        event_url = None
     symbol = asset.symbol if asset else "the market"
 
     phrases = {
@@ -147,4 +171,22 @@ def _fallback_advice(drawn: list[tuple[TarotCard, str, bool]], assets: list[Asse
         f"Taken together, the spread tilts {direction} for {symbol}. "
         f"The cards counsel {side}."
     )
-    return Advice(side=side, asset=asset, reasoning=reasoning, narratives=narratives)
+    if event_headline:
+        reasoning += f' The asset was selected in light of "{event_headline}".'
+    return Advice(
+        side=side,
+        asset=asset,
+        reasoning=reasoning,
+        narratives=narratives,
+        event_headline=event_headline,
+        event_url=event_url,
+    )
+
+
+def _headline_matches(headline: str, asset: Asset) -> bool:
+    text = headline.casefold()
+    terms = (asset.symbol, (asset.name.split() or [""])[0])
+    return any(
+        term and re.search(rf"\b{re.escape(term.casefold())}\b", text)
+        for term in terms
+    )

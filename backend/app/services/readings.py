@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import SPREAD_POSITIONS, Asset, Reading, ReadingCard, TarotCard, User
 from ..schemas import ReadingCreate
 from . import advice as advice_service
-
+from . import news as news_service
 
 async def create_reading(session: AsyncSession, user: User, payload: ReadingCreate) -> Reading:
     cards = (await session.scalars(select(TarotCard))).all()
@@ -27,7 +27,8 @@ async def create_reading(session: AsyncSession, user: User, payload: ReadingCrea
     assets = list((await session.scalars(select(Asset))).all())
     if payload.market != "all":
         assets = [a for a in assets if a.market == payload.market]
-    advice = await advice_service.get_advice(drawn_oriented, assets)
+    news_items = await news_service.recent_news(payload.market)
+    advice = await advice_service.get_advice(drawn_oriented, assets, news_items)
     for rc in reading_cards:
         rc.narrative = advice.narratives[rc.position]
 
@@ -41,6 +42,8 @@ async def create_reading(session: AsyncSession, user: User, payload: ReadingCrea
         ),
         side=advice.side,
         asset_id=advice.asset.id if advice.asset else None,
+        event_headline=advice.event_headline,
+        event_url=advice.event_url,
     )
     reading.drawn_cards.extend(reading_cards)
     session.add(reading)

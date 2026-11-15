@@ -208,6 +208,23 @@ function AdviceBlock({
           <p className="mt-1 text-xs text-muted-foreground">
             {reading.asset.name} — hover a card to see how it maps to the price
           </p>
+          {reading.event_headline && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Chosen because:{' '}
+              {reading.event_url ? (
+                <a
+                  href={reading.event_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  {reading.event_headline}
+                </a>
+              ) : (
+                reading.event_headline
+              )}
+            </p>
+          )}
           <div className="mt-3 flex items-center justify-center gap-2">
             <Input
               type="number"
